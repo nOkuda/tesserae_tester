@@ -15,20 +15,42 @@ def _parse_args():
     return parser.parse_args()
 
 
+def _report_setdiff(pairs, same_pairs, label):
+    """If there are items in the set difference, notifies user and dumps"""
+    diff = pairs.difference(same_pairs)
+    if diff:
+        print('****{0} has extra stuff'.format(label))
+        with open(label+'.txt', 'w') as ofh:
+            for item in diff:
+                ofh.write(item)
+                ofh.write('\n')
+
+
 def compare(r1, r2):
-    """Compares results"""
-    if len(r1) != len(r2):
+    """Compares results
+
+        * r1, r2 :: TesseraeResults
+
+    The score returned is the sum of the differences of scores between the same
+    match pair.
+    """
+    if len(r1.container) != len(r2.container):
         print('****Results do not have same number of matches')
-        return
+    r1_pairs = {k for k in r1.container}
+    r2_pairs = {k for k in r2.container}
+    same_pairs = r1_pairs.intersection(r2_pairs)
+    _report_setdiff(r1_pairs, same_pairs, r1.label)
+    _report_setdiff(r2_pairs, same_pairs, r2.label)
     mismatches = []
-    for m1, m2 in zip(r1, r2):
-        if m1 != m2:
-            mismatches.append((m1, m2))
+    for pair in same_pairs:
+        diff = abs(r1[pair] - r2[pair])
+        if diff:
+            mismatches.append((diff, pair))
     if mismatches:
+        mismatches.sort()
         print('####Mismatches found')
         for mm in mismatches:
-            print(mm[0])
-            print(mm[1])
+            print(mm)
 
 
 def _run(args):

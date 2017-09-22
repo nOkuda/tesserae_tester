@@ -1,4 +1,8 @@
-"""Data structures and functions for Tesserae comparisons"""
+"""Data structures and functions for Tesserae comparisons
+
+Every Tesserae version must implement a get_query_results function that returns
+an instance of TesseraeResults
+"""
 
 
 class TesseraeQuery(object):
@@ -24,27 +28,12 @@ class TesseraeQuery(object):
                 'No query implementation for '+searchtype)
 
 
-class TesseraeResultRecord(object):
-    """Holder class for one Tesserae match"""
+class TesseraeResults(object):
+    """Holder class for Tesserae results
 
-    def __init__(self, source_loc, target_loc, shared, score):
-        """shared must be a sorted iterable"""
-        self.source_loc = source_loc
-        self.target_loc = target_loc
-        self.shared = shared
-        self.score = score
+    self.container :: {(source words, target words): ((shared words), score)}
+    """
 
-    def __eq__(self, other):
-        if self.source_loc != other.source_loc or \
-                self.target_loc != other.target_loc or \
-                self.score != other.score or \
-                len(self.shared) != len(other.shared):
-            return False
-        for this, that in zip(self.shared, other.shared):
-            if this != that:
-                return False
-        return True
-
-    def __str__(self):
-        return '\t'.join([
-            self.source_loc, self.target_loc, str(self.shared), self.score])
+    def __init__(self, label):
+        self.label = label
+        self.container = {}

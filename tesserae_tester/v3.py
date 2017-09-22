@@ -42,53 +42,35 @@ def get_query_results(v3path, query):
             results_dir,
             '--export', 'tab'], stdout=ofh)
     # subprocess.run(['rm', '-rf', results_dir])
-    return TesseraeResults(results_file)
+    result = tess.data.TesseraeResults('v3query')
+    with open(results_file) as ifh:
+        _advance_fh(ifh)
+        for line in ifh:
+            source_words, target_words, shared_words, score = _parse_line(line)
+            result.container[(source_words, target_words)] = \
+                (shared_words, score)
+    return result
 
 
-class TesseraeResults(object):
-    """Holder class for V3 Tesserae results"""
+def _advance_fh(fh):
+    """Advances file handle past non-results lines"""
+    for line in fh:
+        if line.startswith("RESULT"):
+            break
 
-    def __init__(self, in_data):
-        """in_data is the filepath to the V3 results"""
-        self.results_path = in_data
-        self.fh = None
-        self.len = 0
-        tmp = self._get_advanced_fptr()
-        for line in tmp:
-            self.len += 1
 
-    def __len__(self):
-        return self.len
+def _parse_line(line):
+    """Extracts match information of tab delimited V3 results
 
-    def __enter__(self):
-        return self
+    return value :: (source words, target words, shared words, score)
+    """
+    entries = line.strip().split('\t')
+    return (
+        _clean_words(entries[4]),
+        _clean_words(entries[2]),
+        entries[-2],
+        float(entries[-1]))
 
-    def __exit__(self):
-        if self.fh:
-            self.fh.close()
 
-    def __iter__(self):
-        self.fh = self._get_advanced_fptr()
-        return self
-
-    def __next__(self):
-        return self._parse_line(next(self.fh))
-
-    def _get_advanced_fptr(self):
-        """Advances file pointer past non-results lines"""
-        result = open(self.results_path)
-        for line in result:
-            if line.startswith("RESULT"):
-                break
-        return result
-
-    def _parse_line(self, line):
-        """Extracts match information of tab delimited V3 resuls"""
-        entries = line.strip().split('\t')
-        return tess.data.TesseraeResultRecord(
-            entries[3], entries[1], self._parse_shared(entries[-2]),
-            float(entries[-1]))
-
-    def _parse_shared(shared):
-        shared = shared.replace(';', ' ')
-        return shared.strip.split()
+def _clean_words(words):
+    return words.replace('*', '')
