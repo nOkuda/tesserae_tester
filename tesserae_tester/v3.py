@@ -47,8 +47,9 @@ def get_query_results(v3path, query):
         _advance_fh(ifh)
         for line in ifh:
             source_words, target_words, shared_words, score = _parse_line(line)
-            result.container[(source_words, target_words)] = \
-                (shared_words, score)
+            result.container[
+                tess.data.TesseraeMatch(source_words, target_words)] = \
+                tess.data.TesseraeData(shared_words, score)
     return result
 
 

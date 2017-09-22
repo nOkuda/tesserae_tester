@@ -11,6 +11,7 @@ class TesseraeQuery(object):
     def __init__(self, searchtype, source, target):
         self.searchtype = searchtype
         if searchtype == 'vanilla':
+            # simple text to text query
             self.targettext = target
             self.sourcetext = source
             # defaults for v3 according to read_table.pl
@@ -37,3 +38,28 @@ class TesseraeResults(object):
     def __init__(self, label):
         self.label = label
         self.container = {}
+
+
+class TesseraeMatch(object):
+    """Holder class for Tesserae matches"""
+
+    def __init__(self, source_text, target_text):
+        self.source_text = source_text
+        self.target_text = target_text
+
+    def __hash__(self):
+        return hash((self.source_text, self.target_text))
+
+    def __eq__(self, other):
+        if self.source_text == other.source_text and \
+                self.target_text == other.target_text:
+            return True
+        return False
+
+
+class TesseraeData(object):
+    """Holder class for Tesserae match data"""
+
+    def __init__(self, match_terms, score):
+        self.match_terms = match_terms
+        self.score = score
