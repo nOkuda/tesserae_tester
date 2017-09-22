@@ -65,7 +65,6 @@ def _run(args):
         config = json.load(ifh)
     try:
         check = request.urlopen(config['v4path'])
-        print(check.getcode())
     except:
         print('Cannot connect to v4')
         return
