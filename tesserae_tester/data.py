@@ -3,6 +3,7 @@
 Every Tesserae version must implement a get_query_results function that returns
 an instance of TesseraeResults
 """
+import collections
 
 
 class TesseraeQuery(object):
@@ -40,42 +41,6 @@ class TesseraeResults(object):
         self.container = {}
 
 
-class TesseraeMatch(object):
-    """Holder class for Tesserae matches"""
-
-    def __init__(self, source_text, target_text):
-        self.source_text = source_text
-        self.target_text = target_text
-
-    def __hash__(self):
-        return hash((self.source_text, self.target_text))
-
-    def __eq__(self, other):
-        if self.source_text == other.source_text and \
-                self.target_text == other.target_text:
-            return True
-        return False
-
-    def __lt__(self, other):
-        return (self.source_text, self.target_text) < \
-            (other.source_text, other.target_text)
-
-    def __str__(self):
-        return '({0}, {1})'.format(self.source_text, self.target_text)
-
-    def __repr__(self):
-        return str(self)
-
-
-class TesseraeData(object):
-    """Holder class for Tesserae match data"""
-
-    def __init__(self, match_terms, score):
-        self.match_terms = match_terms
-        self.score = score
-
-    def __str__(self):
-        return '({0}, {1})'.format(self.match_terms, self.score)
-
-    def __repr__(self):
-        return str(self)
+TesseraeMatch = collections.namedtuple(
+        'TesseraeMatch', 'source_text target_text')
+TesseraeData = collections.namedtuple('TesseraeData', 'match_terms score')
