@@ -56,6 +56,16 @@ class TesseraeMatch(object):
             return True
         return False
 
+    def __lt__(self, other):
+        return (self.source_text, self.target_text) < \
+            (other.source_text, other.target_text)
+
+    def __str__(self):
+        return '({0}, {1})'.format(self.source_text, self.target_text)
+
+    def __repr__(self):
+        return str(self)
+
 
 class TesseraeData(object):
     """Holder class for Tesserae match data"""
@@ -63,3 +73,9 @@ class TesseraeData(object):
     def __init__(self, match_terms, score):
         self.match_terms = match_terms
         self.score = score
+
+    def __str__(self):
+        return '({0}, {1})'.format(self.match_terms, self.score)
+
+    def __repr__(self):
+        return str(self)

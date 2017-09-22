@@ -20,7 +20,7 @@ def _report_setdiff(pairs, same_pairs, label):
     """If there are items in the set difference, notifies user and dumps"""
     diff = pairs.difference(same_pairs)
     if diff:
-        print('****{0} has extra stuff'.format(label))
+        print('****{0} has not shared matches'.format(label))
         with open(label+'.txt', 'w') as ofh:
             for item in diff:
                 ofh.write(str(item))
@@ -41,12 +41,13 @@ def compare(r1, r2):
     r1_pairs = {k for k in r1.container}
     r2_pairs = {k for k in r2.container}
     same_pairs = r1_pairs.intersection(r2_pairs)
+    print('####Number of matching matches', len(same_pairs))
     _report_setdiff(r1_pairs, same_pairs, r1.label)
     _report_setdiff(r2_pairs, same_pairs, r2.label)
     total_diff = 0.0
     mismatches = []
     for pair in same_pairs:
-        diff = abs(r1.container[pair][1] - r2.container[pair][1])
+        diff = abs(r1.container[pair].score - r2.container[pair].score)
         if diff:
             mismatches.append((diff, pair))
             total_diff += diff
@@ -54,7 +55,7 @@ def compare(r1, r2):
         mismatches.sort()
         print('####Mismatches found')
         for mm in mismatches:
-            print(mm)
+            print(str(mm))
     print('####Total difference: ', total_diff)
 
 

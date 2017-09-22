@@ -56,8 +56,8 @@ def get_query_results(v3path, query):
 def _advance_fh(fh):
     """Advances file handle past non-results lines"""
     for line in fh:
-        if line.startswith("RESULT"):
-            break
+        if line.startswith('"RESULT"'):
+            return
 
 
 def _parse_line(line):
@@ -74,4 +74,4 @@ def _parse_line(line):
 
 
 def _clean_words(words):
-    return words.replace('*', '')
+    return words.replace('*', '').replace('"', '').strip()
