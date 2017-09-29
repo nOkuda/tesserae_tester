@@ -4,6 +4,7 @@ The functions in this file keep track of how to execute queries and parse
 results on v3 Tesserae.
 """
 import os
+import re
 import subprocess
 import uuid
 
@@ -42,7 +43,7 @@ def get_query_results(v3path, query):
             results_dir,
             '--export', 'tab'], stdout=ofh)
     # subprocess.run(['rm', '-rf', results_dir])
-    result = tess.data.TesseraeResults('v3query')
+    result = tess.data.TesseraeResults('v3')
     with open(results_file) as ifh:
         _advance_fh(ifh)
         for line in ifh:
@@ -73,5 +74,16 @@ def _parse_line(line):
         float(entries[-1]))
 
 
+PERIOD_THINNER = re.compile('\.+')
+POST_PERIOD = re.compile('\.\W+')
+EARLY_QUOTE = re.compile("^'\s+")
+DOUBLE_QUOTES = re.compile('“|”', re.UNICODE)
+
+
 def _clean_words(words):
-    return words.replace('*', '').replace('"', '').strip()
+    words = PERIOD_THINNER.sub('.', words)
+    words = POST_PERIOD.sub('.', words)
+    words = EARLY_QUOTE.sub('', words)
+    words = words.replace('*', '').replace('"', '').replace('/', '')
+    words = DOUBLE_QUOTES.sub('"', words)
+    return ' '.join(words.strip().split())

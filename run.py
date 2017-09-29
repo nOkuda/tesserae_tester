@@ -16,18 +16,20 @@ def _parse_args():
     return parser.parse_args()
 
 
-def _report_setdiff(pairs, same_pairs, label):
+def _report_setdiff(pairs, same_pairs, container, version, label):
     """If there are items in the set difference, notifies user and dumps"""
     diff = pairs.difference(same_pairs)
     if diff:
-        print('****{0} has not shared matches'.format(label))
-        with open(label+'.txt', 'w') as ofh:
+        print('****{0} has unshared matches'.format(version))
+        with open(label+'.'+version+'.out', 'w') as ofh:
             for item in diff:
                 ofh.write(str(item))
+                ofh.write('\n\t')
+                ofh.write(str(container[item]))
                 ofh.write('\n')
 
 
-def compare(r1, r2):
+def compare(r1, r2, label):
     """Compares results
 
         * r1, r2 :: TesseraeResults
@@ -35,28 +37,44 @@ def compare(r1, r2):
     The score returned is the sum of the differences of scores between the same
     match pair.
     """
-    if len(r1.container) != len(r2.container):
-        print('****Results do not have same number of matches')
-        print(len(r1.container), len(r2.container))
-    r1_pairs = {k for k in r1.container}
-    r2_pairs = {k for k in r2.container}
-    same_pairs = r1_pairs.intersection(r2_pairs)
-    print('####Number of matching matches', len(same_pairs))
-    _report_setdiff(r1_pairs, same_pairs, r1.label)
-    _report_setdiff(r2_pairs, same_pairs, r2.label)
+    with open(label+'.results', 'w') as ofh:
+        if len(r1.container) != len(r2.container):
+            ofh.write('****Results do not have same number of matches\n')
+            ofh.write(str(len(r1.container))+' '+str(len(r2.container))+'\n')
+        r1_pairs = {k for k in r1.container}
+        r2_pairs = {k for k in r2.container}
+        same_pairs = r1_pairs.intersection(r2_pairs)
+        ofh.write('####Number of matching matches '+str(len(same_pairs))+'\n')
+        _report_setdiff(r1_pairs, same_pairs, r1.container, r1.version, label)
+        _report_setdiff(r2_pairs, same_pairs, r2.container, r2.version, label)
     total_diff = 0.0
     mismatches = []
     for pair in same_pairs:
         diff = abs(r1.container[pair].score - r2.container[pair].score)
         if diff:
-            mismatches.append((diff, pair))
+            mismatches.append((diff, pair, r1.container[pair],
+                r2.container[pair]))
             total_diff += diff
     if mismatches:
         mismatches.sort()
-        print('####Mismatches found')
-        for mm in mismatches:
-            print(str(mm))
-    print('####Total difference: ', total_diff)
+        with open(label+'.mismatches.out', 'w') as ofh:
+            for mm in mismatches:
+                ofh.write(str(mm))
+                ofh.write('\n')
+            ofh.write('####Total difference: '+str(total_diff)+'\n')
+        print('####Total difference: ', total_diff)
+
+
+def _get_queries():
+    """Gets queries to test"""
+    result = {
+        'vanilla': tess.data.TesseraeQuery(
+            'vanilla', 'ovid.ars_amatoria', 'martial.epigrams'),
+        'phrase': tess.data.TesseraeQuery(
+            'vanilla', 'ovid.ars_amatoria', 'martial.epigrams'),
+        }
+    result['phrase'].unit = 'phrase'
+    return result
 
 
 def _run(args):
@@ -64,15 +82,15 @@ def _run(args):
     with open(args.config) as ifh:
         config = json.load(ifh)
     try:
-        check = request.urlopen(config['v4path'])
+        request.urlopen(config['v4path'])
     except:
         print('Cannot connect to v4')
         return
-    query = tess.data.TesseraeQuery(
-        'vanilla', 'ovid.ars_amatoria', 'martial.epigrams')
-    v3results = tess.v3.get_query_results(config['v3path'], query)
-    otherresults = tess.v4.get_query_results(config['v4path'], query)
-    compare(v3results, otherresults)
+    queries = _get_queries()
+    for label, query in queries.items():
+        v3results = tess.v3.get_query_results(config['v3path'], query)
+        otherresults = tess.v4.get_query_results(config['v4path'], query)
+        compare(v3results, otherresults, label)
 
 
 if __name__ == '__main__':

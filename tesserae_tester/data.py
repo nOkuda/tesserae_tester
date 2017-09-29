@@ -36,8 +36,8 @@ class TesseraeResults(object):
     self.container :: {(source words, target words): ((shared words), score)}
     """
 
-    def __init__(self, label):
-        self.label = label
+    def __init__(self, version):
+        self.version = version
         self.container = {}
 
 
