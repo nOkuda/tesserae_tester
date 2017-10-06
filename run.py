@@ -21,12 +21,12 @@ def _report_setdiff(pairs, same_pairs, container, version, label):
     diff = pairs.difference(same_pairs)
     if diff:
         print('****{0} has unshared matches'.format(version))
-        with open(label+'.'+version+'.out', 'w') as ofh:
-            for item in diff:
-                ofh.write(str(item))
-                ofh.write('\n\t')
-                ofh.write(str(container[item]))
-                ofh.write('\n')
+    with open(label+'.'+version+'.out', 'w') as ofh:
+        for item in diff:
+            ofh.write(str(item))
+            ofh.write('\n\t')
+            ofh.write(str(container[item]))
+            ofh.write('\n')
 
 
 def compare(r1, r2, label):
@@ -38,6 +38,13 @@ def compare(r1, r2, label):
     match pair.
     """
     with open(label+'.results', 'w') as ofh:
+        r1_stop = {s for s in r1.stopwords}
+        r2_stop = {s for s in r2.stopwords}
+        same_stop = r1_stop.intersection(r2_stop)
+        if len(same_stop) != len(r1_stop):
+            ofh.write('****Stopword lists do not match\n')
+            for r1s, r2s in zip(sorted(r1.stopwords), sorted(r2.stopwords)):
+                ofh.write('\t'+r1s+'\t'+r2s+'\n')
         if len(r1.container) != len(r2.container):
             ofh.write('****Results do not have same number of matches\n')
             ofh.write(str(len(r1.container))+' '+str(len(r2.container))+'\n')
@@ -63,6 +70,7 @@ def compare(r1, r2, label):
                 ofh.write('\n')
             ofh.write('####Total difference: '+str(total_diff)+'\n')
         print('####Total difference: ', total_diff)
+    return total_diff
 
 
 def _get_queries():
@@ -72,8 +80,11 @@ def _get_queries():
             'vanilla', 'ovid.ars_amatoria', 'martial.epigrams'),
         'phrase': tess.data.TesseraeQuery(
             'vanilla', 'ovid.ars_amatoria', 'martial.epigrams'),
+        'stopsize': tess.data.TesseraeQuery(
+            'vanilla', 'ovid.ars_amatoria', 'martial.epigrams'),
         }
     result['phrase'].unit = 'phrase'
+    result['stopsize'].stop = '50'
     return result
 
 

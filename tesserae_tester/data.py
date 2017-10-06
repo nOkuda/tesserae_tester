@@ -4,6 +4,7 @@ Every Tesserae version must implement a get_query_results function that returns
 an instance of TesseraeResults
 """
 import collections
+import re
 
 
 class TesseraeQuery(object):
@@ -36,11 +37,24 @@ class TesseraeResults(object):
     self.container :: {(source words, target words): ((shared words), score)}
     """
 
-    def __init__(self, version):
+    def __init__(self, version, stopwords):
         self.version = version
+        self.stopwords = stopwords
         self.container = {}
 
 
 TesseraeMatch = collections.namedtuple(
         'TesseraeMatch', 'source_text target_text')
 TesseraeData = collections.namedtuple('TesseraeData', 'match_terms score')
+
+
+NON_ALPHA = re.compile('\W+', re.UNICODE)
+
+
+def clean_words(words):
+    """Normalize text across versions
+
+    There seemed to be discrepancies in the way v3 and v4 handled punctuation,
+    so we're going to ignore punctuation formatting differences.
+    """
+    return ' '.join(NON_ALPHA.sub(' ', words).strip().split())

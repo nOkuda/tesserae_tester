@@ -43,9 +43,10 @@ def get_query_results(v3path, query):
             results_dir,
             '--export', 'tab'], stdout=ofh)
     # subprocess.run(['rm', '-rf', results_dir])
-    result = tess.data.TesseraeResults('v3')
+    result = tess.data.TesseraeResults('v3', [])
     with open(results_file) as ifh:
-        _advance_fh(ifh)
+        stopwords = _parse_header(ifh)
+        result.stopwords = stopwords
         for line in ifh:
             source_words, target_words, shared_words, score = _parse_line(line)
             result.container[
@@ -54,11 +55,17 @@ def get_query_results(v3path, query):
     return result
 
 
-def _advance_fh(fh):
-    """Advances file handle past non-results lines"""
+def _parse_header(fh):
+    """Advances file handle past non-results lines
+
+    Also returns stopwords list
+    """
+    stopwords = []
     for line in fh:
+        if line.startswith('# stopwords'):
+            stopwords = line.strip().split()[3:]
         if line.startswith('"RESULT"'):
-            return
+            return stopwords
 
 
 def _parse_line(line):
@@ -68,22 +75,7 @@ def _parse_line(line):
     """
     entries = line.strip().split('\t')
     return (
-        _clean_words(entries[4]),
-        _clean_words(entries[2]),
+        tess.data.clean_words(entries[4]),
+        tess.data.clean_words(entries[2]),
         entries[-2],
         float(entries[-1]))
-
-
-PERIOD_THINNER = re.compile('\.+')
-POST_PERIOD = re.compile('\.\W+')
-EARLY_QUOTE = re.compile("^'\s+")
-DOUBLE_QUOTES = re.compile('“|”', re.UNICODE)
-
-
-def _clean_words(words):
-    words = PERIOD_THINNER.sub('.', words)
-    words = POST_PERIOD.sub('.', words)
-    words = EARLY_QUOTE.sub('', words)
-    words = words.replace('*', '').replace('"', '').replace('/', '')
-    words = DOUBLE_QUOTES.sub('"', words)
-    return ' '.join(words.strip().split())
