@@ -1,6 +1,7 @@
 """Run comparison tests against configured Tesserae versions"""
 import argparse
 import json
+import os
 import urllib.request as request
 
 import tesserae_tester as tess
@@ -13,15 +14,18 @@ def _parse_args():
     parser.add_argument(
         'config',
         help='Configuration file for comparison tests')
+    parser.add_argument(
+        'outdir',
+        help='Directory where output will be placed')
     return parser.parse_args()
 
 
-def _report_setdiff(pairs, same_pairs, container, version, label):
+def _report_setdiff(pairs, same_pairs, container, outdir, version, label):
     """If there are items in the set difference, notifies user and dumps"""
     diff = pairs.difference(same_pairs)
     if diff:
         print('****{0} has unshared matches'.format(version))
-    with open(label+'.'+version+'.out', 'w') as ofh:
+    with open(os.path.join(outdir, label+'.'+version+'.out'), 'w') as ofh:
         for item in diff:
             ofh.write(str(item))
             ofh.write('\n\t')
@@ -29,7 +33,7 @@ def _report_setdiff(pairs, same_pairs, container, version, label):
             ofh.write('\n')
 
 
-def compare(r1, r2, label):
+def compare(r1, r2, label, outdir):
     """Compares results
 
         * r1, r2 :: TesseraeResults
@@ -37,7 +41,7 @@ def compare(r1, r2, label):
     The score returned is the sum of the differences of scores between the same
     match pair.
     """
-    with open(label+'.results', 'w') as ofh:
+    with open(os.path.join(outdir, label+'.results'), 'w') as ofh:
         r1_stop = {s for s in r1.stopwords}
         r2_stop = {s for s in r2.stopwords}
         same_stop = r1_stop.intersection(r2_stop)
@@ -52,8 +56,10 @@ def compare(r1, r2, label):
         r2_pairs = {k for k in r2.container}
         same_pairs = r1_pairs.intersection(r2_pairs)
         ofh.write('####Number of matching matches '+str(len(same_pairs))+'\n')
-        _report_setdiff(r1_pairs, same_pairs, r1.container, r1.version, label)
-        _report_setdiff(r2_pairs, same_pairs, r2.container, r2.version, label)
+        _report_setdiff(
+            r1_pairs, same_pairs, r1.container, outdir, r1.version, label)
+        _report_setdiff(
+            r2_pairs, same_pairs, r2.container, outdir, r2.version, label)
     total_diff = 0.0
     mismatches = []
     for pair in same_pairs:
@@ -64,7 +70,7 @@ def compare(r1, r2, label):
             total_diff += diff
     if mismatches:
         mismatches.sort()
-        with open(label+'.mismatches.out', 'w') as ofh:
+        with open(os.path.join(outdir, label+'.mismatches.out'), 'w') as ofh:
             for mm in mismatches:
                 ofh.write(str(mm))
                 ofh.write('\n')
@@ -84,10 +90,13 @@ def _get_queries():
             'vanilla', 'ovid.ars_amatoria', 'martial.epigrams'),
         'cutoff': tess.data.TesseraeQuery(
             'vanilla', 'ovid.ars_amatoria', 'martial.epigrams'),
+        'dist': tess.data.TesseraeQuery(
+            'vanilla', 'ovid.ars_amatoria', 'martial.epigrams'),
         }
     result['phrase'].unit = 'phrase'
     result['stopsize'].stop = '50'
     result['cutoff'].cutoff = '8.1'
+    result['dist'].dist = '5'
     return result
 
 
@@ -101,10 +110,11 @@ def _run(args):
         print('Cannot connect to v4')
         return
     queries = _get_queries()
+    os.makedirs(args.outdir, exist_ok=True)
     for label, query in queries.items():
         v3results = tess.v3.get_query_results(config['v3path'], query)
         otherresults = tess.v4.get_query_results(config['v4path'], query)
-        compare(v3results, otherresults, label)
+        compare(v3results, otherresults, label, args.outdir)
 
 
 if __name__ == '__main__':

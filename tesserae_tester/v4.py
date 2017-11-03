@@ -28,6 +28,7 @@ def get_query_results(v4path, query):
         'tess.tfl': 'text',
         'tess.sw': query.stop,
         'tess.cut': query.cutoff,
+        'tess.md': query.dist,
         'start': '0',
         'rows': '999999'
     }
