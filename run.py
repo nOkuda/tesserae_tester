@@ -82,9 +82,12 @@ def _get_queries():
             'vanilla', 'ovid.ars_amatoria', 'martial.epigrams'),
         'stopsize': tess.data.TesseraeQuery(
             'vanilla', 'ovid.ars_amatoria', 'martial.epigrams'),
+        'cutoff': tess.data.TesseraeQuery(
+            'vanilla', 'ovid.ars_amatoria', 'martial.epigrams'),
         }
     result['phrase'].unit = 'phrase'
     result['stopsize'].stop = '50'
+    result['cutoff'].cutoff = '8.1'
     return result
 
 
