@@ -29,6 +29,7 @@ def get_query_results(v4path, query):
         'tess.sw': query.stop,
         'tess.cut': query.cutoff,
         'tess.md': query.dist,
+        'tess.metric': query.dibasis,
         'start': '0',
         'rows': '999999'
     }

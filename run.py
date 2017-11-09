@@ -92,11 +92,26 @@ def _get_queries():
             'vanilla', 'ovid.ars_amatoria', 'martial.epigrams'),
         'dist': tess.data.TesseraeQuery(
             'vanilla', 'ovid.ars_amatoria', 'martial.epigrams'),
+        'dibasis_span': tess.data.TesseraeQuery(
+            'vanilla', 'ovid.ars_amatoria', 'martial.epigrams'),
+        'dibasis_span_target': tess.data.TesseraeQuery(
+            'vanilla', 'ovid.ars_amatoria', 'martial.epigrams'),
+        'dibasis_span_source': tess.data.TesseraeQuery(
+            'vanilla', 'ovid.ars_amatoria', 'martial.epigrams'),
+        'dibasis_freq_target': tess.data.TesseraeQuery(
+            'vanilla', 'ovid.ars_amatoria', 'martial.epigrams'),
+        'dibasis_freq_source': tess.data.TesseraeQuery(
+            'vanilla', 'ovid.ars_amatoria', 'martial.epigrams'),
         }
     result['phrase'].unit = 'phrase'
     result['stopsize'].stop = '50'
     result['cutoff'].cutoff = '8.1'
     result['dist'].dist = '5'
+    result['dibasis_span'].dibasis = 'span'
+    result['dibasis_span_target'].dibasis = 'span_target'
+    result['dibasis_span_source'].dibasis = 'span_source'
+    result['dibasis_freq_target'].dibasis = 'freq_target'
+    result['dibasis_freq_source'].dibasis = 'freq_source'
     return result
 
 
