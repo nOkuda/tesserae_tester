@@ -46,7 +46,9 @@ def compare(r1, r2, label, outdir):
         r2_stop = {s for s in r2.stopwords}
         same_stop = r1_stop.intersection(r2_stop)
         if len(same_stop) != len(r1_stop):
-            ofh.write('****Stopword lists do not match\n')
+            ofh.write('****Stopword lists do not match (')
+            ofh.write(str(len(r1.stopwords)) + ') (')
+            ofh.write(str(len(r2.stopwords)) + ')\n')
             for r1s, r2s in zip(sorted(r1.stopwords), sorted(r2.stopwords)):
                 ofh.write('\t'+r1s+'\t'+r2s+'\n')
         if len(r1.container) != len(r2.container):
@@ -82,6 +84,15 @@ def compare(r1, r2, label, outdir):
 def _get_queries():
     """Gets queries to test"""
     result = {
+        'freqbasis': tess.data.TesseraeQuery(
+            'vanilla', 'ovid.ars_amatoria', 'martial.epigrams'),
+        }
+    result['freqbasis'].freq_basis = 'corpus'
+    return result
+
+def _get_all_queries():
+    """Gets queries to test"""
+    result = {
         'vanilla': tess.data.TesseraeQuery(
             'vanilla', 'ovid.ars_amatoria', 'martial.epigrams'),
         'phrase': tess.data.TesseraeQuery(
@@ -102,6 +113,14 @@ def _get_queries():
             'vanilla', 'ovid.ars_amatoria', 'martial.epigrams'),
         'dibasis_freq_source': tess.data.TesseraeQuery(
             'vanilla', 'ovid.ars_amatoria', 'martial.epigrams'),
+        'stbasis_source': tess.data.TesseraeQuery(
+            'vanilla', 'ovid.ars_amatoria', 'martial.epigrams'),
+        'stbasis_target': tess.data.TesseraeQuery(
+            'vanilla', 'ovid.ars_amatoria', 'martial.epigrams'),
+        'stbasis_both': tess.data.TesseraeQuery(
+            'vanilla', 'ovid.ars_amatoria', 'martial.epigrams'),
+        'freqbasis': tess.data.TesseraeQuery(
+            'vanilla', 'ovid.ars_amatoria', 'martial.epigrams'),
         }
     result['phrase'].unit = 'phrase'
     result['stopsize'].stop = '50'
@@ -112,6 +131,10 @@ def _get_queries():
     result['dibasis_span_source'].dibasis = 'span_source'
     result['dibasis_freq_target'].dibasis = 'freq_target'
     result['dibasis_freq_source'].dibasis = 'freq_source'
+    result['stbasis_source'].stbasis = 'source'
+    result['stbasis_target'].stbasis = 'target'
+    result['stbasis_both'].stbasis = 'both'
+    result['freqbasis'].freq_basis = 'corpus'
     return result
 
 

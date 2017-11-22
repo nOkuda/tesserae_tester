@@ -19,7 +19,7 @@ class TesseraeQuery(object):
             # defaults for v3 according to read_table.pl
             self.unit = 'line'
             self.feature = 'stem'
-            self.freq_basis = 'text'
+            self.freq_basis = 'texts'
             self.score = 'feature'
             self.stop = '10'
             self.stbasis = 'corpus'

@@ -30,6 +30,9 @@ def get_query_results(v4path, query):
         'tess.cut': query.cutoff,
         'tess.md': query.dist,
         'tess.metric': query.dibasis,
+        'tess.sb': query.stbasis,
+        'tess.fb': query.freq_basis,
+        'tess.rc': 'false',
         'start': '0',
         'rows': '999999'
     }
